@@ -10,10 +10,10 @@ from flask.ext.restful.utils import cors
 
 class WalletList(restful.Resource):
     token_parser = reqparse.RequestParser()
-    token_parser.add_argument('token', type=str, required=True)
+    token_parser.add_argument('token', type=str, required=True, location='args')
 
     create_parse = reqparse.RequestParser()
-    create_parse.add_argument('token', type=str, required=True)
+    create_parse.add_argument('token', type=str, required=True, location='args')
     create_parse.add_argument('name', required=True)
     create_parse.add_argument('description', required=True)
     def get(self):
@@ -30,7 +30,7 @@ class WalletList(restful.Resource):
             { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods' : '*' }
     def post(self):
         args = self.__class__.create_parse.parse_args()
-        user = User.get_by_token(args['token'].strip())
+        user = User.get_by_token(request.args['token'].strip())
         new_wallet = Wallet(name=args['name'].strip(), description=args['description'].strip(),\
                 create_by=user.id, timestamp=datetime.utcnow())
         db.session.add(new_wallet)
@@ -79,12 +79,12 @@ class WalletUsers(restful.Resource):
     token_parser.add_argument('token', type=str, required=True)
 
     post_parser = reqparse.RequestParser()
-    post_parser.add_argument('token', type=str, required=True)
+    post_parser.add_argument('token', type=str, required=True, location="args")
     post_parser.add_argument('user_id', type=int, required=True)
     post_parser.add_argument('role', type=str, default='normal')
 
     delete_parser= reqparse.RequestParser()
-    delete_parser.add_argument('token', type=str, required=True)
+    delete_parser.add_argument('token', type=str, required=True, location="args")
     delete_parser.add_argument('user_id', type=int, required=True)
     def get(self, wallet_id):
         args = self.__class__.token_parser.parse_args()
@@ -97,7 +97,7 @@ class WalletUsers(restful.Resource):
                 wallet.users.all())
     def post(self, wallet_id):
         args = self.__class__.post_parser.parse_args()
-        user = User.get_by_token(args['token'].strip())
+        user = User.get_by_token(request.args['token'].strip())
         wallet = Wallet.query.get_or_404(wallet_id)
         wallet_user = wallet.users.filter_by(user_id=user.id).first_or_404()
         if wallet_user.role != WalletUser.ADMIN:
@@ -116,7 +116,7 @@ class WalletUsers(restful.Resource):
         return {'status': 'already exist'}, 409
     def put(self, wallet_id):
         args = self.__class__.post_parser.parse_args()
-        user = User.get_by_token(args['token'].strip())
+        user = User.get_by_token(request.args['token'].strip())
         wallet = Wallet.query.get_or_404(wallet_id)
         wallet_user = wallet.users.filter_by(user_id=user.id).first_or_404()
         if wallet_user.role != WalletUser.ADMIN:
@@ -159,7 +159,7 @@ class Users(restful.Resource):
     update_user_parser.add_argument('name')
     def get(self):
         users = User.query.all()
-        return map(lambda u: {'id': u.id, 'name': u.name, 'password': u.password}, users)
+        return map(lambda u: {'id': u.id, 'name': u.name}, users)
     def post(self):
         args = self.__class__.new_user_parser.parse_args()
         try:
@@ -181,9 +181,9 @@ class Users(restful.Resource):
 
 class EventList(restful.Resource):
     token_parser = reqparse.RequestParser()
-    token_parser.add_argument('token', type=str, required=True)
+    token_parser.add_argument('token', type=str, required=True, location='args')
     event_parser = reqparse.RequestParser()
-    event_parser.add_argument('token', type=str, required=True)
+    token_parser.add_argument('token', type=str, required=True, location='args')
     event_parser.add_argument('name', type=str, required=True)
     event_parser.add_argument('description', type=str)
     event_parser.add_argument('transaction', type=list, required=True)
@@ -198,15 +198,15 @@ class EventList(restful.Resource):
                 wallet.events.all())
     def post(self, wallet_id):
         args = self.__class__.event_parser.parse_args()
-        user = User.get_by_token(args['token'].strip())
+        user = User.get_by_token(request.args['token'].strip())
         wallet = Wallet.query.get_or_404(wallet_id)
         wallet_user = wallet.users.filter_by(user_id=user.id).first_or_404()
         if wallet_user.role != WalletUser.ADMIN:
             abort(403)
         total = 0.0
         for line in args['transaction']:
-            user_id = line['user_id']
-            total += line['amount']
+            user_id = int(line['user_id'])
+            total += float(line['amount'])
             if wallet.users.filter_by(user_id=user_id).count() == 0:
                 return {'status': 'user not exist'}, 400
         if abs(total) > 0.01:
@@ -217,10 +217,10 @@ class EventList(restful.Resource):
         db.session.commit()
         for line in args['transaction']:
             transaction = MoneyTransaction(event_id=event.id, \
-                    user_id=line['user_id'], amount=line['amount'], \
+                    user_id=int(line['user_id']), amount=float(line['amount']), \
                     notes = line.get('notes', ''))
             db.session.add(transaction)
-            wu = wallet.users.filter_by(user_id=line['user_id']).first()
+            wu = wallet.users.filter_by(user_id=int(line['user_id'])).first()
             wu.ballance += line['amount']
         db.session.commit()
         return {'id': event.id}, 201
@@ -232,22 +232,42 @@ class Event(restful.Resource):
         user = User.get_by_token(args['token'].strip())
         wallet = Wallet.query.get_or_404(wallet_id)
         wallet.users.filter_by(user_id=user.id).first_or_404()
-        return ''
-
+        event = MoneyEvent.query.get_or_404(event_id)
+        result = {
+            "id": event.id,
+            "name": event.name,
+            "description": event.description,
+            "transaction": [],
+        }
+        for transaction in event.transactions.all():
+            tmp = {
+                'user_id': transaction.user_id,
+                'amount': transaction.amount,
+                'notes': transaction.notes,
+                'name': transaction.user.name
+            }
+            result['transaction'].append(tmp)
+        return result
 class Login(restful.Resource):
     def get(self):
         username = request.args.get('username', '')
         password = request.args.get('password', '')
         user = User.query.filter_by(username=username).first()
+        if not user:
+            return {'status': 'user not exist'}, 401, \
+                { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods' : '*' }
         if user.check_password(password):
             user.update_token()
             db.session.commit()
             result = {'status': 'SUCCESS',
                     'token': user.token,
+                    'user_id': user.id,
+                    'username': user.username,
+                    'name': user.name,
                     'expire_time': user.token_expire_time.isoformat()
                 }
             return result, 200, \
                 { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods' : '*' }
         else:
-            return {'status': 'password not correct'}, 403, \
+            return {'status': 'password not correct'}, 401, \
                 { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods' : '*' }

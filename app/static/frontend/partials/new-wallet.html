@@ -1,0 +1,22 @@
+<div class="container">
+	<div class="row">
+		<div class="span12">
+			<h1> 新建钱包 </h1>
+			<form class="form-horizontal">
+				<div class="control-group">
+					<label class="control-label" for="name">钱包名称：</label>
+					<div class="controls">
+						<input id="name" type="text" require="require" ng-model="name" />
+					</div>
+				</div>
+				<div class="control-group">
+					<label class="control-label" for="description">描述：</label>
+					<div class="controls">
+						<input id="description" type="text" require="require" ng-model="description" />
+					</div>
+				</div>
+				<input type="submit" value="新建钱包" ng-click="submit()">
+			</form>
+		</div>
+	</div>
+</div>

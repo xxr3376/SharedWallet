@@ -1,0 +1,19 @@
+<div class="container">
+	<h1>
+		{{walletEvent.name}}
+		<small> {{walletEvent.id}} </small>
+	</h1>
+	<p> 描述：{{walletEvent.description}} </p>
+	<table class="table" >
+		<tr>
+			<th> 用户 </th>
+			<th> 交易额 </th>
+			<th> 备注 </th>
+		</tr>
+		<tr ng-repeat="t in walletEvent['transaction']">
+			<td>{{t.name}} </td>
+			<td>{{t.amount}} </td>
+			<td>{{t.notes}} </td>
+		</tr>
+	</table>
+</div>

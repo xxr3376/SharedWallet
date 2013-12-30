@@ -23,6 +23,7 @@ $(function() {
       error: failCallback
     });
   }
+  window.postJSON = postJSON;
   var getToken = function(username, password, callback) {
     var expire_time = localStorage.getItem('expire_time', '');
     var token = localStorage.getItem('token', '');

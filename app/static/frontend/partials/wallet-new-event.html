@@ -1,0 +1,66 @@
+<div class="container">
+	<div class="row">
+		<div class="span12">
+			<h1> 新建活动 </h1>
+			<h2> 活动描述 </h2>
+			<div class="form-horizontal">
+				<div class="control-group">
+					<label class="control-label" for="name">活动名称：</label>
+					<div class="controls">
+						<input id="name" type="text" require="require" ng-model="name" />
+					</div>
+				</div>
+				<div class="control-group">
+					<label class="control-label" for="description">描述：</label>
+					<div class="controls">
+						<input id="description" type="text" require="require" ng-model="description" />
+					</div>
+				</div>
+			</div>
+			<h2>参与者：
+				<div class="pull-right">
+					<small>过滤人员: <input ng-model="query"> </small>
+				</div>
+			</h2>
+			<div class="row">
+				<div class="span12">
+					<ul>
+						<li class="user title">
+						<span class="name">用户</span>
+						<span class="pay"> 垫付钱数量 </span>
+						<span class="rate"> 分摊比例 </span>
+						<span class="switch-btn">  / </span>
+						<span class="borrow"> 分摊钱数 </span>
+						<span class="final">结算</span>
+						<span class="note">备注</span>
+						</li>
+						<li class="user" ng-repeat="user in users | filter:query">
+						<span class="name"> {{user.name}}</span>
+						<span class="pay">
+							<input type="number" step="0.01" ng-model="payList[user.id]" ng-change="calculate()">
+						</span>
+						<span class="rate">
+							<input type="number" ng-disabled="customList[user.id]" step="1" min="0" ng-model="borrowRateList[user.id]" ng-change="calculate()">
+						</span>
+						<span class="switch-btn">
+							<button class="switch-btn btn btn-mini btn-info" ng-click="switchCustom(user)"> 切换 </button>
+						</span>
+						<span class="borrow">
+							<input type="number" ng-disabled="!customList[user.id]" step="0.01" ng-model="borrowList[user.id]" ng-change="calculate()">
+						</span>
+						<span class="final">{{all[user.id] | number:2}}</span>
+						<span class="note">
+							<input type="text" placeholder="备注" ng-model="notes[user.id]" ng-change="calculate()">
+						</span>
+						</li>
+					</ul>
+				</div>
+			</div>
+
+			<div> 总入账： {{totalPay() |number:2}}</div>
+			<div> 总出账： {{totalBorrow() | number:2}}</div>
+
+			<button ng-click="submit()" ng-disabled="!vaild()" type="button" class="btn btn-primary btn-block">提交</button>
+		</div>
+	</div>
+</div>

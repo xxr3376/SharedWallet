@@ -9,13 +9,14 @@ from flask import abort
 class User(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String(64), index=True, unique=True)
-    name = db.Column(db.Text)
+    name = db.Column(db.String(64), unique=True)
     password = db.Column(db.String(64))
     token = db.Column(db.String(64), index=True)
     token_expire_time = db.Column(db.DateTime)
     wallets = db.relationship('Wallet', backref='user', lazy='dynamic')
     wallet_users = db.relationship('WalletUser', backref='user', lazy='dynamic')
     wallet_events = db.relationship('MoneyEvent', backref='user', lazy='dynamic')
+    wallet_events = db.relationship('MoneyTransaction', backref='user', lazy='dynamic')
 
     def __init__(self, **kwargs):
         if 'password' in kwargs:
@@ -28,7 +29,7 @@ class User(db.Model):
             setattr(self, k, v)
     def update_token(self):
         self.token = uuid.uuid1().hex
-        self.token_expire_time = datetime.datetime.utcnow() + datetime.timedelta(seconds=1000)
+        self.token_expire_time = datetime.datetime.utcnow() + datetime.timedelta(seconds=10000)
         return self.token
     def check_password(self, raw):
         if not self.password:
@@ -44,7 +45,7 @@ class User(db.Model):
         user = cls.query.filter_by(token=token).first()
         if user and user.token_expire_time > datetime.datetime.utcnow():
             return user
-        abort(403)
+        abort(401)
     @staticmethod
     def create_password(raw):
         salt = User.create_token(8)
