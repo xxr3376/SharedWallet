@@ -1,0 +1,40 @@
+<div class="container">
+	<div class="row">
+		<div class="span4 offset3">
+			<form class="form-horizontal">
+				<div class="control-group">
+					<label class="control-label" for="username"> Username </label>
+					<div class="controls">
+						<input id="username" ng-model="username" placeholder="Username" required="required"/>
+					</div>
+				</div>
+				<div class="control-group">
+					<label class="control-label" for="password"> Password </label>
+					<div class="controls">
+						<input id="password" type="password" ng-model="password" placeholder="Password" required="required"/>
+					</div>
+				</div>
+				<div class="control-group">
+					<label class="control-label" for="repeat-password"> Repeat-Password </label>
+					<div class="controls">
+						<input id="repeat-password" type="password" ng-model="repeat_password" placeholder="Repeat Password" required="required"/>
+					</div>
+				</div>
+				<div class="control-group">
+					<label class="control-label" for="name"> Name </label>
+					<div class="controls">
+						<input id="name" ng-model="name" placeholder="Name" required="required"/>
+					</div>
+				</div>
+				<div class="control-group">
+					<div class="controls">
+						<input class="btn btn-primary btn-block" type="submit" ng-click="reg()" value="注册"/>
+						<div>
+							<a href="#/login" class="btn-link"> 已有账号，登陆</a>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>

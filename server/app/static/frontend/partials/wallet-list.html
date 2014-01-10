@@ -1,0 +1,19 @@
+<div class="container">
+	<h1> Wallets
+		<a class="pull-right" href="#/wallets/new"><small> 新建钱包 </small></a>
+	</h1>
+	Filter By: <input ng-model="query" type="search">
+	<div class="row">
+		<div class="span12">
+			<ul class="wallets">
+				<li ng-repeat="wallet in wallets | filter:query" class="wallet item">
+				<a href="#/wallets/{{wallet.id}}">
+					<h3>{{wallet.name}}</h3>
+				</a>
+				<p class="text-success">描述：{{wallet.description}}</p>
+				<p class="muted">{{wallet.timestamp | date:"yyyy-MM-dd"}}</p>
+				</li>
+			</ul>
+		</div>
+	</div>
+</div>

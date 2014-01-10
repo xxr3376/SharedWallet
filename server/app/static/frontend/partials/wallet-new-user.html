@@ -1,0 +1,20 @@
+<div class="container">
+	<h1> 添加用户 </h1>
+	<table class="table">
+		<tr>
+			<th>
+				用户名
+				<input ng-model="query" placeholder="type to Filter">
+			</th>
+			<th>
+				添加
+			</td>
+		</tr>
+		<tr ng-repeat="user in allusers | filter:query">
+			<td>{{user.name}} </td>
+			<td>
+				<a class="btn btn-default btn-mini" ng-click="addUser(user)">添加此用户</a>
+			</td>
+		</tr>
+	</table>
+</div>

@@ -1,0 +1,37 @@
+<div class="container">
+	<h1>{{wallet.name}}</h1>
+	<p class="text-info">{{wallet.description}}</p>
+	<p class="muted">{{wallet.timestamp | date:"yyyy-MM-dd"}}</p>
+	<div class="row">
+		<div class="span6">
+			<h2 class="clearfix"> 全部用户余额
+				<div class="pull-right">
+					<a class="btn" href="#/wallets/{{wallet.id}}/newuser"> 添加用户 </a>
+				</div>
+			</h2>
+			<ul class="users">
+				<li ng-repeat="user in users" class="user item">
+				<strong> {{user.name}} </strong>
+				<strong> {{user.ballance | number:2}} </strong>
+				<p class="muted text-right">{{user.role | role}} </p>
+				</li>
+			</ul>
+		</div>
+		<div class="span6">
+			<h2 class="clearfix"> 全部交易
+				<div class="pull-right">
+					<a class="btn" href="#/wallets/{{wallet.id}}/newevent"> 添加新账目 </a>
+				</div>
+			</h2>
+			<ul class="events">
+				<li ng-repeat="event in events" class="event item">
+				<a href="#/wallets/{{wallet.id}}/events/{{event.id}}">
+					<h3>{{event.name}} </h3>
+				</a>
+				<p class="text-info">{{event.description}}</p>
+				<p class="pull-right muted">{{event.timestamp | date}}</p>
+				</li>
+			</ul>
+		</div>
+	</div>
+</div>
